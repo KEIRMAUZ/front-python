@@ -14,7 +14,7 @@ const ProjectCreation = ({ onProjectCreated }) => {
       name: projectName,
       description: projectDescription,
       created_at: new Date().toISOString(),
-      status: 'activo',
+      status: 'Activo',
       total: 0,
       completadas: 0,
       pendientes: 0

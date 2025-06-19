@@ -18,7 +18,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
       fecha_limite: dueDate,
       usuario: assinedTo,
       completada: false,
-      estado: 'pendiente',
+      estado: 'Pendiente',
       creada_en: new Date().toISOString()
     };
     
@@ -28,7 +28,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
 
   const resetForm = () => {
     setDescription('');
-    setPriority('media');
+    setPriority('Media');
     setDueDate('');
     setAssignedTo('');
   };
@@ -71,9 +71,9 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
               onChange={(e) => setPriority(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="alta">Alta</option>
-              <option value="media">Media</option>
-              <option value="baja">Baja</option>
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
             </select>
           </div>
           

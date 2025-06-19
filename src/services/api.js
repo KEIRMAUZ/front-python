@@ -13,7 +13,7 @@ export const fetchProjects = async () => {
             total: 12,
             completadas: 8,
             pendientes: 4,
-            status: "activo",
+            status: "Activo",
             users: 3
           },
           {
@@ -24,7 +24,7 @@ export const fetchProjects = async () => {
             total: 7,
             completadas: 2,
             pendientes: 5,
-            status: "activo",
+            status: "Activo",
             users: 2
           },
           {
@@ -35,7 +35,7 @@ export const fetchProjects = async () => {
             total: 5,
             completadas: 5,
             pendientes: 0,
-            status: "completado",
+            status: "Completado",
             users: 1
           }
         ]);
@@ -54,7 +54,7 @@ export const fetchProjects = async () => {
           total: 12,
           completadas: 8,
           pendientes: 4,
-          status: "activo",
+          status: "Activo",
           users: 3,
           tareas: [
             {
