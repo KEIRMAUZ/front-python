@@ -1,4 +1,4 @@
-// src/App.js
+
 import React, { useState, useEffect } from 'react';
 import './index.css'
 import ProjectDashboard from './components/ProjectDashboard';
