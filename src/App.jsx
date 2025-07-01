@@ -7,7 +7,7 @@ import UserManagement from './components/UserManagement';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import './services/tailwindLoad'
-import { fetchProjects, fetchProjectStatus, createProject, checkApiHealth } from './services/api';
+import { fetchProjects, fetchProjectStatus, createProject, deleteProject, checkApiHealth } from './services/api';
 
 function App() {
   const [projects, setProjects] = useState([]);
@@ -81,6 +81,22 @@ function App() {
     setSelectedProject(null);
     setView('dashboard');
     setError(null);
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteProject(projectId);
+      setProjects(projects.filter(p => p._id !== projectId));
+      setSelectedProject(null);
+      setView('dashboard');
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleProjectCreated = async (newProject) => {
@@ -203,6 +219,7 @@ function App() {
             <ProjectDetail 
               project={selectedProject} 
               onBack={handleBackToDashboard}
+              onDeleteProject={handleDeleteProject}
             />
           ) : view === 'create' ? (
             <ProjectCreation onProjectCreated={handleProjectCreated} />

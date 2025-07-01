@@ -2,15 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import TaskList from './TaskList';
 import AddTaskForm from './AddTaskForm';
-import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaCheck, FaUserAlt } from 'react-icons/fa';
-import { createTask, updateTask, deleteTask } from '../services/api';
+import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaCheck, FaUserAlt, FaTimes, FaSave } from 'react-icons/fa';
+import { createTask, updateTask, deleteTask, updateProject } from '../services/api';
 
-const ProjectDetail = ({ project, onBack }) => {
+const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
   console.log('🔍 ProjectDetail - Project recibido:', project);
   console.log('🔍 ProjectDetail - Project._id:', project?._id);
   console.log('🔍 ProjectDetail - Project keys:', project ? Object.keys(project) : 'No project');
   
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [tasks, setTasks] = useState(project.tareas || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -98,6 +99,55 @@ const ProjectDetail = ({ project, onBack }) => {
     }
   };
 
+  const handleDeleteProject = async () => {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar el proyecto "${project.name}"? Esta acción también eliminará todas las tareas asociadas y no se puede deshacer.`)) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await onDeleteProject(project._id);
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditProject = () => {
+    setEditingProject({
+      _id: project._id,
+      name: project.name,
+      description: project.description || '',
+      status: project.status || 'Activo',
+      users: project.users || 0
+    });
+  };
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const updatedProject = await updateProject(editingProject._id, editingProject);
+      // Actualizar el proyecto en el estado local
+      Object.assign(project, updatedProject);
+      setEditingProject(null);
+    } catch (error) {
+      console.error('Error updating project:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProject(null);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -109,19 +159,111 @@ const ProjectDetail = ({ project, onBack }) => {
         </button>
         
         <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">{project.name}</h1>
-            <p className="text-gray-600 mt-2">{project.description || "Sin descripción"}</p>
-          </div>
-          
-          <div className="flex space-x-2">
-            <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-md flex items-center">
-              <FaEdit className="mr-2" /> Editar
-            </button>
-            <button className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md flex items-center">
-              <FaTrash className="mr-2" /> Eliminar
-            </button>
-          </div>
+          {editingProject ? (
+            // Formulario de edición
+            <form onSubmit={handleUpdateProject} className="w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="projectName">
+                    Nombre del Proyecto *
+                  </label>
+                  <input
+                    type="text"
+                    id="projectName"
+                    value={editingProject.name}
+                    onChange={(e) => setEditingProject({...editingProject, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="projectStatus">
+                    Estado
+                  </label>
+                  <select
+                    id="projectStatus"
+                    value={editingProject.status}
+                    onChange={(e) => setEditingProject({...editingProject, status: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={loading}
+                  >
+                    <option value="Activo">Activo</option>
+                    <option value="Completado">Completado</option>
+                    <option value="Pausado">Pausado</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="projectDescription">
+                  Descripción
+                </label>
+                <textarea
+                  id="projectDescription"
+                  value={editingProject.description}
+                  onChange={(e) => setEditingProject({...editingProject, description: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="3"
+                  disabled={loading}
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={loading}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 flex items-center"
+                >
+                  <FaTimes className="mr-2" /> Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !editingProject.name.trim()}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                >
+                  <FaSave className="mr-2" /> Guardar Cambios
+                </button>
+              </div>
+            </form>
+          ) : (
+            // Vista normal del proyecto
+            <>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">{project.name}</h1>
+                <p className="text-gray-600 mt-2">{project.description || "Sin descripción"}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-gray-500">Estado: </span>
+                  <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                    project.status === 'Activo' ? 'bg-green-100 text-green-800' :
+                    project.status === 'Completado' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {project.status}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex space-x-2">
+                <button 
+                  onClick={handleEditProject}
+                  disabled={loading}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-md flex items-center disabled:bg-gray-50 disabled:text-gray-400"
+                >
+                  <FaEdit className="mr-2" /> Editar
+                </button>
+                <button 
+                  onClick={handleDeleteProject}
+                  disabled={loading}
+                  className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md flex items-center disabled:bg-gray-100 disabled:text-gray-400"
+                >
+                  <FaTrash className="mr-2" /> Eliminar
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

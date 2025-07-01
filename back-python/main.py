@@ -355,13 +355,20 @@ async def create_user(user: UserCreate):
 async def update_user(user_id: str, user: UserCreate):
     """Actualizar un usuario"""
     try:
+        print(f"🔍 update_user - user_id recibido: {user_id}")
+        print(f"🔍 update_user - datos recibidos: {user.dict()}")
+        
         db = get_db()
         user_data = user.dict()
+        
+        print(f"🔍 update_user - datos a actualizar: {user_data}")
         
         result = db.users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": user_data}
         )
+        
+        print(f"🔍 update_user - resultado de actualización: {result.modified_count} documentos modificados")
         
         if result.matched_count == 0:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -370,8 +377,10 @@ async def update_user(user_id: str, user: UserCreate):
         updated_user = db.users.find_one({"_id": ObjectId(user_id)})
         updated_user["_id"] = str(updated_user["_id"])
         
+        print(f"🔍 update_user - usuario actualizado: {updated_user}")
         return updated_user
     except Exception as e:
+        print(f"❌ Error en update_user: {e}")
         raise HTTPException(status_code=500, detail=f"Error al actualizar usuario: {str(e)}")
 
 @app.delete("/api/users/{user_id}")
