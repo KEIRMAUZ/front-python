@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaEdit, FaUserFriends } from 'react-icons/fa';
-import { fetchUsers, createUser, deleteUser } from '../services/api';
+import { FaPlus, FaTrash, FaEdit, FaUserFriends, FaTimes, FaSave } from 'react-icons/fa';
+import { fetchUsers, createUser, deleteUser, updateUser } from '../services/api';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
@@ -87,6 +88,38 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const updatedUser = await updateUser(editingUser._id, editingUser);
+      setUsers(users.map(user => 
+        user._id === editingUser._id ? updatedUser : user
+      ));
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
   };
 
   const roles = {
@@ -260,32 +293,100 @@ const UserManagement = () => {
           
           <div className="divide-y">
             {users.map((user, index) => (
-              <div key={user._id || `user-${index}`} className="grid grid-cols-12 px-4 py-3 items-center">
-                <div className="col-span-1">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {user.name.charAt(0).toUpperCase()}
+              <div key={user._id || `user-${index}`} className="px-4 py-3">
+                {editingUser && editingUser._id === user._id ? (
+                  // Formulario de edición
+                  <form onSubmit={handleUpdateUser} className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-1">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {editingUser.name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="col-span-3">
+                      <input
+                        type="text"
+                        value={editingUser.name}
+                        onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <input
+                        type="email"
+                        value={editingUser.email}
+                        onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <select
+                        value={editingUser.role}
+                        onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        disabled={loading}
+                      >
+                        <option value="user">Usuario</option>
+                        <option value="manager">Gerente</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="flex space-x-2">
+                        <button
+                          type="submit"
+                          disabled={loading || !editingUser.name.trim() || !editingUser.email.trim()}
+                          className="text-green-600 hover:text-green-800 disabled:text-gray-400"
+                        >
+                          <FaSave />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          disabled={loading}
+                          className="text-gray-400 hover:text-gray-600 disabled:text-gray-300"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                ) : (
+                  // Vista normal del usuario
+                  <div className="grid grid-cols-12 items-center">
+                    <div className="col-span-1">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="col-span-3 font-medium">{user.name}</div>
+                    <div className="col-span-4 text-gray-600">{user.email}</div>
+                    <div className="col-span-2">
+                      <span className={`${roles[user.role]?.color || 'bg-gray-500'} text-white text-xs px-2 py-1 rounded-full`}>
+                        {roles[user.role]?.text || user.role}
+                      </span>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEditUser(user)}
+                          className="text-gray-400 hover:text-blue-600"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(user._id)}
+                          className="text-gray-400 hover:text-red-600"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="col-span-3 font-medium">{user.name}</div>
-                <div className="col-span-4 text-gray-600">{user.email}</div>
-                <div className="col-span-2">
-                  <span className={`${roles[user.role]?.color || 'bg-gray-500'} text-white text-xs px-2 py-1 rounded-full`}>
-                    {roles[user.role]?.text || user.role}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <div className="flex space-x-2">
-                    <button className="text-gray-400 hover:text-blue-600">
-                      <FaEdit />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteUser(user._id)}
-                      className="text-gray-400 hover:text-red-600"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             ))}
           </div>
