@@ -7,10 +7,22 @@ const ProjectCard = ({ project, onClick }) => {
     ? Math.round((project.completadas / project.total) * 100) 
     : 0;
 
+  const handleClick = () => {
+    // Usar _id si está disponible, o generar un ID temporal basado en el nombre
+    const projectId = project._id || `temp-${project.name?.replace(/\s+/g, '-').toLowerCase()}`;
+    console.log('ProjectCard clicked, project ID:', projectId);
+    
+    if (onClick && projectId) {
+      onClick(projectId);
+    } else {
+      console.error('No se pudo obtener el ID del proyecto:', project);
+    }
+  };
+
   return (
     <div 
       className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-      onClick={onClick}
+      onClick={handleClick}
     >
       <div className="flex justify-between items-start">
         <div>

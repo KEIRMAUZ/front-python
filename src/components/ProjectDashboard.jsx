@@ -3,18 +3,22 @@ import React from 'react';
 import ProjectCard from './ProjectCard';
 import { FaPlus, FaChartPie } from 'react-icons/fa';
 
-const ProjectDashboard = ({ projects, onSelectProject }) => {
+const ProjectDashboard = ({ projects, onSelectProject, setView }) => {
   // Calcular estadísticas generales
   const stats = projects.reduce((acc, project) => {
     acc.totalProjects += 1;
-    acc.totalTasks += project.total;
-    acc.completedTasks += project.completadas;
+    acc.totalTasks += project.total || 0;
+    acc.completedTasks += project.completadas || 0;
     return acc;
   }, { totalProjects: 0, totalTasks: 0, completedTasks: 0 });
 
   const completionPercentage = stats.totalTasks > 0 
     ? Math.round((stats.completedTasks / stats.totalTasks) * 100) 
     : 0;
+
+  const handleCreateProject = () => {
+    setView('create');
+  };
 
   return (
     <div className="space-y-6">
@@ -24,7 +28,10 @@ const ProjectDashboard = ({ projects, onSelectProject }) => {
           <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
             <FaChartPie className="mr-2" /> Reportes
           </button>
-          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center">
+          <button 
+            onClick={handleCreateProject}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center"
+          >
             <FaPlus className="mr-2" /> Nuevo Proyecto
           </button>
         </div>
@@ -66,19 +73,25 @@ const ProjectDashboard = ({ projects, onSelectProject }) => {
         {projects.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p>No hay proyectos creados aún</p>
-            <button className="mt-4 text-blue-500 hover:underline">
+            <button 
+              onClick={handleCreateProject}
+              className="mt-4 text-blue-500 hover:underline"
+            >
               Crear primer proyecto
             </button>
           </div>
         ) : (
           <div className="divide-y">
-            {projects.map(project => (
-              <ProjectCard 
-                key={project._id} 
-                project={project} 
-                onClick={() => onSelectProject(project._id)}
-              />
-            ))}
+            {projects.map((project, index) => {
+              const projectId = project._id || `temp-${project.name?.replace(/\s+/g, '-').toLowerCase()}`;
+              return (
+                <ProjectCard 
+                  key={projectId || `project-${index}`} 
+                  project={project} 
+                  onClick={onSelectProject}
+                />
+              );
+            })}
           </div>
         )}
       </div>

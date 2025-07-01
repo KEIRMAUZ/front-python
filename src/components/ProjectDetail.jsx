@@ -1,12 +1,19 @@
 // src/components/ProjectDetail.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskList from './TaskList';
 import AddTaskForm from './AddTaskForm';
 import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaCheck, FaUserAlt } from 'react-icons/fa';
+import { createTask, updateTask, deleteTask } from '../services/api';
 
 const ProjectDetail = ({ project, onBack }) => {
+  console.log('🔍 ProjectDetail - Project recibido:', project);
+  console.log('🔍 ProjectDetail - Project._id:', project?._id);
+  console.log('🔍 ProjectDetail - Project keys:', project ? Object.keys(project) : 'No project');
+  
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [tasks, setTasks] = useState(project.tareas || []);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Calcular estadísticas para este proyecto
   const completedTasks = tasks.filter(task => task.completada).length;
@@ -20,15 +27,75 @@ const ProjectDetail = ({ project, onBack }) => {
     baja: { text: 'Baja', color: 'bg-green-500' }
   };
 
-  const handleAddTask = (newTask) => {
-    setTasks([...tasks, newTask]);
-    setShowAddTaskForm(false);
+  const handleAddTask = async (newTask) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('🔍 Project object:', project);
+      console.log('🔍 Project._id:', project._id);
+      console.log('🔍 New task data:', newTask);
+      
+      const taskData = {
+        ...newTask,
+        project_id: project._id,
+        estado: 'pendiente',
+        completada: false
+      };
+      
+      console.log('🔍 Final task data with project_id:', taskData);
+      
+      const createdTask = await createTask(taskData);
+      setTasks([...tasks, createdTask]);
+      setShowAddTaskForm(false);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCompleteTask = (taskId) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, completada: true, estado: 'completada' } : task
-    ));
+  const handleCompleteTask = async (taskId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const task = tasks.find(t => t.id === taskId || t._id === taskId);
+      if (!task) return;
+
+      const updatedTaskData = {
+        ...task,
+        completada: true,
+        estado: 'completada'
+      };
+
+      const updatedTask = await updateTask(taskId, updatedTaskData);
+      setTasks(tasks.map(t => 
+        (t.id === taskId || t._id === taskId) ? updatedTask : t
+      ));
+    } catch (error) {
+      console.error('Error updating task:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteTask(taskId);
+      setTasks(tasks.filter(t => t.id !== taskId && t._id !== taskId));
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +125,30 @@ const ProjectDetail = ({ project, onBack }) => {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-600"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg shadow">
@@ -87,7 +178,8 @@ const ProjectDetail = ({ project, onBack }) => {
         <h2 className="text-xl font-semibold text-gray-800">Tareas del Proyecto</h2>
         <button 
           onClick={() => setShowAddTaskForm(true)}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center"
+          disabled={loading}
+          className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md flex items-center"
         >
           <FaPlus className="mr-2" /> Agregar Tarea
         </button>
@@ -96,7 +188,8 @@ const ProjectDetail = ({ project, onBack }) => {
       {showAddTaskForm && (
         <AddTaskForm 
           onAddTask={handleAddTask} 
-          onCancel={() => setShowAddTaskForm(false)} 
+          onCancel={() => setShowAddTaskForm(false)}
+          loading={loading}
         />
       )}
 
@@ -115,15 +208,15 @@ const ProjectDetail = ({ project, onBack }) => {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="grid grid-cols-12 bg-gray-50 text-gray-500 text-sm font-medium px-4 py-3 border-b">
             <div className="col-span-1">Estado</div>
-            <div className="col-span-5">Descripción</div>
+            <div className="col-span-4">Descripción</div>
             <div className="col-span-2">Prioridad</div>
             <div className="col-span-2">Asignado</div>
-            <div className="col-span-2">Acciones</div>
+            <div className="col-span-3">Acciones</div>
           </div>
           
           <div className="divide-y">
             {tasks.map(task => (
-              <div key={task.id} className="grid grid-cols-12 px-4 py-3 items-center">
+              <div key={task.id || task._id} className="grid grid-cols-12 px-4 py-3 items-center">
                 <div className="col-span-1">
                   {task.completada ? (
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
@@ -135,10 +228,10 @@ const ProjectDetail = ({ project, onBack }) => {
                     </span>
                   )}
                 </div>
-                <div className="col-span-5 font-medium">{task.descripcion}</div>
+                <div className="col-span-4 font-medium">{task.descripcion}</div>
                 <div className="col-span-2">
-                  <span className={`${priorities[task.prioridad].color} text-white text-xs px-2 py-1 rounded-full`}>
-                    {priorities[task.prioridad].text}
+                  <span className={`${priorities[task.prioridad]?.color || 'bg-gray-500'} text-white text-xs px-2 py-1 rounded-full`}>
+                    {priorities[task.prioridad]?.text || task.prioridad}
                   </span>
                 </div>
                 <div className="col-span-2">
@@ -153,19 +246,34 @@ const ProjectDetail = ({ project, onBack }) => {
                     <span className="text-gray-400">Sin asignar</span>
                   )}
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-3 flex space-x-2">
                   {!task.completada && (
                     <button 
-                      onClick={() => handleCompleteTask(task.id)}
-                      className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-md flex items-center text-sm"
+                      onClick={() => handleCompleteTask(task.id || task._id)}
+                      disabled={loading}
+                      className="bg-green-100 hover:bg-green-200 disabled:bg-gray-100 text-green-700 px-3 py-1 rounded-md flex items-center text-sm"
                     >
                       <FaCheck className="mr-1" /> Completar
                     </button>
                   )}
+                  <button 
+                    onClick={() => handleDeleteTask(task.id || task._id)}
+                    disabled={loading}
+                    className="bg-red-100 hover:bg-red-200 disabled:bg-gray-100 text-red-700 px-3 py-1 rounded-md flex items-center text-sm"
+                  >
+                    <FaTrash className="mr-1" /> Eliminar
+                  </button>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex justify-center items-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-600">Procesando...</span>
         </div>
       )}
     </div>

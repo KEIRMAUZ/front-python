@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
-const AddTaskForm = ({ onAddTask, onCancel }) => {
+const AddTaskForm = ({ onAddTask, onCancel, loading = false }) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('media');
   const [dueDate, setDueDate] = useState('');
@@ -12,14 +12,12 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
     e.preventDefault();
     
     const newTask = {
-      id: Date.now().toString(),
       descripcion: description,
       prioridad: priority,
-      fecha_limite: dueDate,
-      usuario: assinedTo,
+      fecha_limite: dueDate || null,
+      usuario: assignedTo || null,
       completada: false,
-      estado: 'Pendiente',
-      creada_en: new Date().toISOString()
+      estado: 'pendiente'
     };
     
     onAddTask(newTask);
@@ -28,7 +26,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
 
   const resetForm = () => {
     setDescription('');
-    setPriority('Media');
+    setPriority('media');
     setDueDate('');
     setAssignedTo('');
   };
@@ -39,7 +37,8 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
         <h3 className="text-lg font-semibold text-gray-800">Agregar Nueva Tarea</h3>
         <button 
           onClick={onCancel}
-          className="text-gray-500 hover:text-gray-700"
+          disabled={loading}
+          className="text-gray-500 hover:text-gray-700 disabled:text-gray-300"
         >
           <FaTimes />
         </button>
@@ -48,7 +47,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="description">
-            Descripción de la tarea
+            Descripción de la tarea *
           </label>
           <textarea
             id="description"
@@ -57,6 +56,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows="3"
             required
+            disabled={loading}
           ></textarea>
         </div>
         
@@ -70,10 +70,11 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
             >
-              <option value="Alta">Alta</option>
-              <option value="Media">Media</option>
-              <option value="Baja">Baja</option>
+              <option value="baja">Baja</option>
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
             </select>
           </div>
           
@@ -87,6 +88,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
             />
           </div>
           
@@ -101,6 +103,7 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
               onChange={(e) => setAssignedTo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Nombre del usuario"
+              disabled={loading}
             />
           </div>
         </div>
@@ -109,15 +112,24 @@ const AddTaskForm = ({ onAddTask, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            disabled={loading || !description.trim()}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
           >
-            Agregar Tarea
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                Creando...
+              </>
+            ) : (
+              'Agregar Tarea'
+            )}
           </button>
         </div>
       </form>

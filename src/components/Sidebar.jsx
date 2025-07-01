@@ -26,7 +26,10 @@ const Sidebar = ({ setView }) => {
           <span>Crear Proyecto</span>
         </button>
         
-        <button className="flex items-center w-full p-3 rounded-lg hover:bg-gray-700 transition-colors">
+        <button 
+          onClick={() => setView('users')}
+          className="flex items-center w-full p-3 rounded-lg hover:bg-gray-700 transition-colors"
+        >
           <FaUserFriends className="mr-3" />
           <span>Usuarios</span>
         </button>
