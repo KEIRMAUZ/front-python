@@ -17,7 +17,6 @@ function App() {
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState(null);
 
-  // Verificar estado de la API al cargar
   useEffect(() => {
     const checkApi = async () => {
       const status = await checkApiHealth();
@@ -39,22 +38,8 @@ function App() {
     setError(null);
     try {
       const data = await fetchProjects();
-      console.log('Proyectos cargados:', data);
-      console.log('Estructura del primer proyecto:', JSON.stringify(data[0], null, 2));
-      
-      // Verificar si el _id está presente en cada proyecto
-      data.forEach((project, index) => {
-        console.log(`Proyecto ${index + 1}:`, {
-          name: project.name,
-          hasId: '_id' in project,
-          id: project._id,
-          keys: Object.keys(project)
-        });
-      });
-      
       setProjects(data);
     } catch (error) {
-      console.error("Error cargando proyectos:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -62,7 +47,6 @@ function App() {
   };
 
   const handleSelectProject = async (projectId) => {
-    console.log('Seleccionando proyecto con ID:', projectId);
     setLoading(true);
     setError(null);
     try {
@@ -70,7 +54,6 @@ function App() {
       setSelectedProject(projectData);
       setView('detail');
     } catch (error) {
-      console.error("Error cargando detalles del proyecto:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -92,7 +75,6 @@ function App() {
       setSelectedProject(null);
       setView('dashboard');
     } catch (error) {
-      console.error("Error deleting project:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -112,7 +94,6 @@ function App() {
       setProjects([...projects, createdProject]);
       setView('dashboard');
     } catch (error) {
-      console.error("Error creando proyecto:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -123,7 +104,6 @@ function App() {
     loadProjects();
   };
 
-  // Mostrar error de conexión
   if (apiStatus && apiStatus.status === 'unhealthy') {
     return (
       <div className="flex h-screen bg-gray-50">

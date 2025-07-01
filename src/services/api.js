@@ -1,13 +1,8 @@
-// src/services/api.js
-// API service para conectar con el backend Python
-
 import config from '../config';
 
 const API_BASE_URL = config.API_BASE_URL;
 
-// Función helper para manejar errores de la API
 const handleApiError = (error) => {
-  console.error('API Error:', error);
   if (error.response) {
     throw new Error(`Error ${error.response.status}: ${error.response.data?.detail || error.response.statusText}`);
   } else if (error.request) {
@@ -17,7 +12,6 @@ const handleApiError = (error) => {
   }
 };
 
-// Función helper para hacer peticiones HTTP
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const config = {
@@ -29,63 +23,41 @@ const apiRequest = async (endpoint, options = {}) => {
   };
 
   try {
-    console.log(`🌐 Enviando request a: ${url}`);
-    console.log(`📤 Datos enviados:`, options.body ? JSON.parse(options.body) : 'No body');
-    
     const response = await fetch(url, config);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`❌ Error ${response.status}:`, errorData);
       throw new Error(JSON.stringify(errorData) || `Error ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
-    console.log(`✅ Respuesta exitosa:`, data);
     return data;
   } catch (error) {
-    console.error(`💥 Error en apiRequest:`, error);
     handleApiError(error);
   }
 };
-
-// ===== PROYECTOS =====
 
 export const fetchProjects = async () => {
   try {
     const projects = await apiRequest('/projects');
     return projects;
   } catch (error) {
-    console.error('Error fetching projects:', error);
     throw error;
   }
 };
 
 export const fetchProjectStatus = async (projectId) => {
   try {
-    console.log('🔍 fetchProjectStatus - projectId recibido:', projectId);
-    
-    // Obtener el proyecto
     const project = await apiRequest(`/projects/${projectId}`);
-    console.log('🔍 fetchProjectStatus - proyecto obtenido:', project);
-    console.log('🔍 fetchProjectStatus - project._id:', project._id);
-    
-    // Obtener las tareas del proyecto
     const tasks = await apiRequest(`/projects/${projectId}/tasks`);
-    console.log('🔍 fetchProjectStatus - tareas obtenidas:', tasks);
     
-    // Combinar proyecto con tareas
     const result = {
       ...project,
       tareas: tasks
     };
     
-    console.log('🔍 fetchProjectStatus - resultado final:', result);
-    console.log('🔍 fetchProjectStatus - resultado._id:', result._id);
-    
     return result;
   } catch (error) {
-    console.error('Error fetching project status:', error);
     throw error;
   }
 };
@@ -103,7 +75,6 @@ export const createProject = async (projectData) => {
     });
     return newProject;
   } catch (error) {
-    console.error('Error creating project:', error);
     throw error;
   }
 };
@@ -121,7 +92,6 @@ export const updateProject = async (projectId, projectData) => {
     });
     return updatedProject;
   } catch (error) {
-    console.error('Error updating project:', error);
     throw error;
   }
 };
@@ -133,27 +103,21 @@ export const deleteProject = async (projectId) => {
     });
     return true;
   } catch (error) {
-    console.error('Error deleting project:', error);
     throw error;
   }
 };
-
-// ===== TAREAS =====
 
 export const fetchProjectTasks = async (projectId) => {
   try {
     const tasks = await apiRequest(`/projects/${projectId}/tasks`);
     return tasks;
   } catch (error) {
-    console.error('Error fetching project tasks:', error);
     throw error;
   }
 };
 
 export const createTask = async (taskData) => {
   try {
-    console.log('🔍 Datos de tarea recibidos en createTask:', taskData);
-    
     const taskPayload = {
       descripcion: taskData.descripcion,
       prioridad: taskData.prioridad,
@@ -164,15 +128,12 @@ export const createTask = async (taskData) => {
       fecha_limite: taskData.fecha_limite || null
     };
     
-    console.log('📤 Payload a enviar al backend:', taskPayload);
-    
     const newTask = await apiRequest('/tasks', {
       method: 'POST',
       body: JSON.stringify(taskPayload),
     });
     return newTask;
   } catch (error) {
-    console.error('Error creating task:', error);
     throw error;
   }
 };
@@ -192,7 +153,6 @@ export const updateTask = async (taskId, taskData) => {
     });
     return updatedTask;
   } catch (error) {
-    console.error('Error updating task:', error);
     throw error;
   }
 };
@@ -204,19 +164,15 @@ export const deleteTask = async (taskId) => {
     });
     return true;
   } catch (error) {
-    console.error('Error deleting task:', error);
     throw error;
   }
 };
-
-// ===== USUARIOS =====
 
 export const fetchUsers = async () => {
   try {
     const users = await apiRequest('/users');
     return users;
   } catch (error) {
-    console.error('Error fetching users:', error);
     throw error;
   }
 };
@@ -233,7 +189,6 @@ export const createUser = async (userData) => {
     });
     return newUser;
   } catch (error) {
-    console.error('Error creating user:', error);
     throw error;
   }
 };
@@ -245,7 +200,6 @@ export const deleteUser = async (userId) => {
     });
     return true;
   } catch (error) {
-    console.error('Error deleting user:', error);
     throw error;
   }
 };
@@ -262,12 +216,9 @@ export const updateUser = async (userId, userData) => {
     });
     return updatedUser;
   } catch (error) {
-    console.error('Error updating user:', error);
     throw error;
   }
 };
-
-// ===== UTILIDADES =====
 
 export const checkApiHealth = async () => {
   try {

@@ -6,9 +6,6 @@ import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaCheck, FaUserAlt, FaTimes, FaSa
 import { createTask, updateTask, deleteTask, updateProject } from '../services/api';
 
 const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
-  console.log('🔍 ProjectDetail - Project recibido:', project);
-  console.log('🔍 ProjectDetail - Project._id:', project?._id);
-  console.log('🔍 ProjectDetail - Project keys:', project ? Object.keys(project) : 'No project');
   
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
@@ -32,10 +29,6 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔍 Project object:', project);
-      console.log('🔍 Project._id:', project._id);
-      console.log('🔍 New task data:', newTask);
-      
       const taskData = {
         ...newTask,
         project_id: project._id,
@@ -43,13 +36,10 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
         completada: false
       };
       
-      console.log('🔍 Final task data with project_id:', taskData);
-      
       const createdTask = await createTask(taskData);
       setTasks([...tasks, createdTask]);
       setShowAddTaskForm(false);
     } catch (error) {
-      console.error('Error creating task:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -74,7 +64,6 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
         (t.id === taskId || t._id === taskId) ? updatedTask : t
       ));
     } catch (error) {
-      console.error('Error updating task:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -92,7 +81,6 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
       await deleteTask(taskId);
       setTasks(tasks.filter(t => t.id !== taskId && t._id !== taskId));
     } catch (error) {
-      console.error('Error deleting task:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -109,7 +97,6 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
     try {
       await onDeleteProject(project._id);
     } catch (error) {
-      console.error('Error deleting project:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -137,7 +124,6 @@ const ProjectDetail = ({ project, onBack, onDeleteProject }) => {
       Object.assign(project, updatedProject);
       setEditingProject(null);
     } catch (error) {
-      console.error('Error updating project:', error);
       setError(error.message);
     } finally {
       setLoading(false);

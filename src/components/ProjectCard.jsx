@@ -1,4 +1,3 @@
-// src/components/ProjectCard.jsx
 import React from 'react';
 import { FaTasks, FaUserAlt, FaCalendarAlt } from 'react-icons/fa';
 
@@ -8,14 +7,10 @@ const ProjectCard = ({ project, onClick }) => {
     : 0;
 
   const handleClick = () => {
-    // Usar _id si está disponible, o generar un ID temporal basado en el nombre
     const projectId = project._id || `temp-${project.name?.replace(/\s+/g, '-').toLowerCase()}`;
-    console.log('ProjectCard clicked, project ID:', projectId);
     
     if (onClick && projectId) {
       onClick(projectId);
-    } else {
-      console.error('No se pudo obtener el ID del proyecto:', project);
     }
   };
 
