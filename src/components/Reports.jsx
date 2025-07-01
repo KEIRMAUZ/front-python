@@ -33,27 +33,31 @@ const Reports = () => {
     }
   };
 
-  const pieData = projectStats.map(project => ({
-    name: project.name,
-    value: project.total_tasks,
-    completed: project.completed_tasks,
-    pending: project.pending_tasks
-  }));
+  const pieData = projectStats
+    .filter(project => project && project.name) // Filtrar proyectos válidos
+    .map(project => ({
+      name: project.name || 'Proyecto sin nombre',
+      value: project.total_tasks || 0,
+      completed: project.completed_tasks || 0,
+      pending: project.pending_tasks || 0
+    }));
 
-  const barData = projectStats.map(project => ({
-    name: project.name,
-    Completadas: project.completed_tasks,
-    Pendientes: project.pending_tasks
-  }));
+  const barData = projectStats
+    .filter(project => project && project.name) // Filtrar proyectos válidos
+    .map(project => ({
+      name: project.name || 'Proyecto sin nombre',
+      Completadas: project.completed_tasks || 0,
+      Pendientes: project.pending_tasks || 0
+    }));
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold">{`${label}`}</p>
+          <p className="font-semibold">{label || 'Proyecto sin nombre'}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value}`}
+              {`${entry.name || 'Sin nombre'}: ${entry.value || 0}`}
             </p>
           ))}
         </div>
@@ -266,28 +270,37 @@ const Reports = () => {
                 <FaChartPie className="mr-2" />
                 Distribución de Tareas por Proyecto
               </h3>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              {pieData.length === 0 ? (
+                <div className="h-96 flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <p>No hay proyectos con tareas para mostrar</p>
+                    <p className="text-sm mt-2">Crea proyectos y agrega tareas para ver las estadísticas</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name || 'Sin nombre'} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
           )}
 
@@ -297,19 +310,28 @@ const Reports = () => {
                 <FaChartBar className="mr-2" />
                 Progreso de Tareas por Proyecto
               </h3>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Bar dataKey="Completadas" fill="#10B981" />
-                    <Bar dataKey="Pendientes" fill="#F59E0B" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {barData.length === 0 ? (
+                <div className="h-96 flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <p>No hay proyectos con tareas para mostrar</p>
+                    <p className="text-sm mt-2">Crea proyectos y agrega tareas para ver las estadísticas</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Bar dataKey="Completadas" fill="#10B981" />
+                      <Bar dataKey="Pendientes" fill="#F59E0B" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
           )}
 

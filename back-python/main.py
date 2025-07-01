@@ -274,6 +274,23 @@ async def get_users():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener usuarios: {str(e)}")
 
+@app.get("/api/users/simple")
+async def get_users_simple():
+    try:
+        db = get_db()
+        users = list(db.users.find({}, {"name": 1, "email": 1}))
+        
+        simple_users = []
+        for user in users:
+            simple_users.append({
+                "name": user.get("name", ""),
+                "email": user.get("email", "")
+            })
+        
+        return simple_users
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener usuarios: {str(e)}")
+
 @app.post("/api/users", response_model=User)
 async def create_user(user: UserCreate):
     try:
@@ -345,14 +362,16 @@ async def get_project_stats():
             project_id = str(project["_id"])
             tasks = list(db.tasks.find({"project_id": project_id}))
             
-            stats.append({
+            project_stat = {
                 "project_id": project_id,
                 "name": project.get("name", ""),
                 "total_tasks": len(tasks),
                 "completed_tasks": len([t for t in tasks if t.get("completada", False)]),
                 "pending_tasks": len([t for t in tasks if not t.get("completada", False)]),
                 "created_at": project.get("created_at")
-            })
+            }
+            
+            stats.append(project_stat)
         
         return stats
     except Exception as e:

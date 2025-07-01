@@ -1,12 +1,30 @@
-// src/components/AddTaskForm.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { fetchUsersSimple } from '../services/api';
 
 const AddTaskForm = ({ onAddTask, onCancel, loading = false }) => {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('media');
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const usersData = await fetchUsersSimple();
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -96,15 +114,34 @@ const AddTaskForm = ({ onAddTask, onCancel, loading = false }) => {
             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="assignedTo">
               Asignar a (opcional)
             </label>
-            <input
-              type="text"
+            <select
               id="assignedTo"
               value={assignedTo}
               onChange={(e) => setAssignedTo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nombre del usuario"
-              disabled={loading}
-            />
+              disabled={loading || loadingUsers}
+            >
+              <option value="">Seleccionar usuario</option>
+              {users.length === 0 && !loadingUsers ? (
+                <option value="" disabled>No hay usuarios disponibles</option>
+              ) : (
+                users.map((user, index) => (
+                  <option key={index} value={user.name}>
+                    {user.name} ({user.email})
+                  </option>
+                ))
+              )}
+            </select>
+            {loadingUsers && (
+              <p className="text-xs text-gray-500 mt-1">Cargando usuarios...</p>
+            )}
+            {users.length === 0 && !loadingUsers && (
+              <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-md">
+                <p className="text-xs text-orange-700">
+                  <strong>No hay usuarios disponibles.</strong> Ve a la sección "Usuarios" para crear usuarios que puedas asignar a las tareas.
+                </p>
+              </div>
+            )}
           </div>
         </div>
         

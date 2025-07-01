@@ -177,6 +177,15 @@ export const fetchUsers = async () => {
   }
 };
 
+export const fetchUsersSimple = async () => {
+  try {
+    const users = await apiRequest('/users/simple');
+    return users;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const createUser = async (userData) => {
   try {
     const newUser = await apiRequest('/users', {
