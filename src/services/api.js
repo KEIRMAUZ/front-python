@@ -232,3 +232,21 @@ export const checkApiHealth = async () => {
     return { status: 'unhealthy', database: 'disconnected' };
   }
 };
+
+export const fetchProjectStats = async () => {
+  try {
+    const stats = await apiRequest('/reports/project-stats');
+    return stats;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchTaskTimeline = async () => {
+  try {
+    const timeline = await apiRequest('/reports/task-timeline');
+    return timeline;
+  } catch (error) {
+    throw error;
+  }
+};

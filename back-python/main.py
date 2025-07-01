@@ -334,6 +334,56 @@ async def test_endpoint():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.get("/api/reports/project-stats")
+async def get_project_stats():
+    try:
+        db = get_db()
+        projects = list(db.projects.find())
+        
+        stats = []
+        for project in projects:
+            project_id = str(project["_id"])
+            tasks = list(db.tasks.find({"project_id": project_id}))
+            
+            stats.append({
+                "project_id": project_id,
+                "name": project.get("name", ""),
+                "total_tasks": len(tasks),
+                "completed_tasks": len([t for t in tasks if t.get("completada", False)]),
+                "pending_tasks": len([t for t in tasks if not t.get("completada", False)]),
+                "created_at": project.get("created_at")
+            })
+        
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener estadísticas: {str(e)}")
+
+@app.get("/api/reports/task-timeline")
+async def get_task_timeline():
+    try:
+        db = get_db()
+        tasks = list(db.tasks.find())
+        
+        timeline = []
+        for task in tasks:
+            project = db.projects.find_one({"_id": ObjectId(task.get("project_id", ""))})
+            if project:
+                timeline.append({
+                    "task_id": str(task["_id"]),
+                    "task_name": task.get("descripcion", ""),
+                    "project_name": project.get("name", ""),
+                    "project_id": str(project["_id"]),
+                    "status": task.get("estado", "pendiente"),
+                    "completed": task.get("completada", False),
+                    "priority": task.get("prioridad", "media"),
+                    "created_at": task.get("creada_en"),
+                    "deadline": task.get("fecha_limite")
+                })
+        
+        return timeline
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener timeline: {str(e)}")
+
 @app.get("/health")
 async def health_check():
     try:

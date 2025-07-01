@@ -4,6 +4,7 @@ import ProjectDashboard from './components/ProjectDashboard';
 import ProjectDetail from './components/ProjectDetail';
 import ProjectCreation from './components/ProjectCreation';
 import UserManagement from './components/UserManagement';
+import Reports from './components/Reports';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import './services/tailwindLoad'
@@ -205,6 +206,8 @@ function App() {
             <ProjectCreation onProjectCreated={handleProjectCreated} />
           ) : view === 'users' ? (
             <UserManagement />
+          ) : view === 'reports' ? (
+            <Reports />
           ) : null}
         </main>
       </div>

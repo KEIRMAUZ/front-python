@@ -25,9 +25,7 @@ const ProjectDashboard = ({ projects, onSelectProject, setView }) => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard de Proyectos</h1>
         <div className="flex space-x-2">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
-            <FaChartPie className="mr-2" /> Reportes
-          </button>
+          
           <button 
             onClick={handleCreateProject}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center"

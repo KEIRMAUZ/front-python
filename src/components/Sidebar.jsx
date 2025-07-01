@@ -34,7 +34,10 @@ const Sidebar = ({ setView }) => {
           <span>Usuarios</span>
         </button>
         
-        <button className="flex items-center w-full p-3 rounded-lg hover:bg-gray-700 transition-colors">
+        <button 
+          onClick={() => setView('reports')}
+          className="flex items-center w-full p-3 rounded-lg hover:bg-gray-700 transition-colors"
+        >
           <FaChartBar className="mr-3" />
           <span>Reportes</span>
         </button>
