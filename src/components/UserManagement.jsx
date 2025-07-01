@@ -23,22 +23,8 @@ const UserManagement = () => {
     setError(null);
     try {
       const data = await fetchUsers();
-      console.log('🔍 Usuarios cargados:', data);
-      console.log('🔍 Estructura del primer usuario:', data[0] ? JSON.stringify(data[0], null, 2) : 'No hay usuarios');
-      
-      // Verificar si el _id está presente en cada usuario
-      data.forEach((user, index) => {
-        console.log(`Usuario ${index + 1}:`, {
-          name: user.name,
-          hasId: '_id' in user,
-          id: user._id,
-          keys: Object.keys(user)
-        });
-      });
-      
       setUsers(data);
     } catch (error) {
-      console.error('Error loading users:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -56,7 +42,6 @@ const UserManagement = () => {
       setShowAddUserForm(false);
       setNewUser({ name: '', email: '', role: 'user' });
     } catch (error) {
-      console.error('Error creating user:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -64,11 +49,7 @@ const UserManagement = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    console.log('🔍 handleDeleteUser - userId recibido:', userId);
-    console.log('🔍 handleDeleteUser - tipo de userId:', typeof userId);
-    
     if (!userId || userId === 'undefined') {
-      console.error('❌ Error: userId es undefined o inválido');
       setError('ID de usuario inválido');
       return;
     }
@@ -83,7 +64,6 @@ const UserManagement = () => {
       await deleteUser(userId);
       setUsers(users.filter(user => user._id !== userId));
     } catch (error) {
-      console.error('Error deleting user:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -111,7 +91,6 @@ const UserManagement = () => {
       ));
       setEditingUser(null);
     } catch (error) {
-      console.error('Error updating user:', error);
       setError(error.message);
     } finally {
       setLoading(false);
