@@ -24,6 +24,7 @@ const Reports = () => {
         fetchProjectStats(),
         fetchTaskTimeline()
       ]);
+      console.log('Datos originales del backend:', stats);
       setProjectStats(stats);
       setTaskTimeline(timeline);
     } catch (error) {
@@ -34,16 +35,18 @@ const Reports = () => {
   };
 
   const pieData = projectStats
-    .filter(project => project && project.name) // Filtrar proyectos válidos
-    .map(project => ({
-      name: project.name || 'Proyecto sin nombre',
-      value: project.total_tasks || 0,
-      completed: project.completed_tasks || 0,
-      pending: project.pending_tasks || 0
-    }));
+    .map(project => {
+      const data = {
+        name: project.name || 'Proyecto sin nombre',
+        value: project.total_tasks || 0,
+        completed: project.completed_tasks || 0,
+        pending: project.pending_tasks || 0
+      };
+      console.log('Proyecto procesado:', data);
+      return data;
+    });
 
   const barData = projectStats
-    .filter(project => project && project.name) // Filtrar proyectos válidos
     .map(project => ({
       name: project.name || 'Proyecto sin nombre',
       Completadas: project.completed_tasks || 0,
@@ -51,15 +54,22 @@ const Reports = () => {
     }));
 
   const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
+    console.log('Tooltip data:', { active, payload, label });
+    console.log('Payload length:', payload?.length);
+    console.log('Payload content:', payload);
+    
+    if (active && payload && payload.length > 0) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold">{label || 'Proyecto sin nombre'}</p>
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }}>
-              {`${entry.name || 'Sin nombre'}: ${entry.value || 0}`}
-            </p>
-          ))}
+          {payload.map((entry, index) => {
+            console.log('Entry:', entry);
+            return (
+              <p key={index} style={{ color: entry.color }}>
+                {`${entry.name || 'Sin nombre'}: ${entry.value || 0}`}
+              </p>
+            );
+          })}
         </div>
       );
     }
@@ -295,7 +305,7 @@ const Reports = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -324,7 +334,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip />
                       <Legend />
                       <Bar dataKey="Completadas" fill="#10B981" />
                       <Bar dataKey="Pendientes" fill="#F59E0B" />
